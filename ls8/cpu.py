@@ -14,26 +14,37 @@ class CPU:
         # Create 256 bits of RAM
         self.ram = [0] * 255
 
-    def load(self):
+    def load(self, script):
         """Load a program into memory."""
 
         address = 0
 
         # For now, we've just hardcoded a program:
+        ### Removing hardcoded comments to create read-in function
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000, # registrar 0
+        #     0b00001000, # value 8
+        #     0b01000111, # PRN R0
+        #     0b00000000, # print value in first registrar
+        #     0b00000001, # HLT
+        # ]
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000, # registrar 0
-            0b00001000, # value 8
-            0b01000111, # PRN R0
-            0b00000000, # print value in first registrar
-            0b00000001, # HLT
-        ]
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
+        with open(script) as f:
+            for line in f:
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+                comment_split = line.split("#")
+                command = comment_split[0].strip()
+
+                if line == "":
+                    continue
+                value = int(command,2)
+                self.ram[address] = value
+                address += 1
 
     def ram_read(self, address):
         """
@@ -53,6 +64,12 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+
+        elif op == "SUB":
+            self.reg[reg_a] -= selfreg[reb_b]
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -100,6 +117,15 @@ class CPU:
                 print(self.reg[reg_slot])
 
                 self.pc += 2
+
+            elif instruction == 0b10100010:  # Where did this hexadecimal # come from?
+                # If MULT is called
+                # Grab the next two values in program counter
+                # to find out what values in registrar are going to be multiplied
+                reg_slot_1 = self.ram[self.pc + 1]
+                reg_slot_2 = self.ram[self.pc + 2]
+                self.alu('MUL', reg_slot_1, reg_slot_2)
+                self.pc += 3
 
             else:
                 print("Command not recognized")
