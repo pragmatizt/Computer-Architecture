@@ -13,6 +13,8 @@ class CPU:
         self.pc = 0
         # Create 256 bits of RAM
         self.ram = [0] * 255
+        # Create a Stack Pointer 
+        self.sp = 7
 
     def load(self, script):
         """Load a program into memory."""
@@ -126,6 +128,29 @@ class CPU:
                 reg_slot_2 = self.ram[self.pc + 2]
                 self.alu('MUL', reg_slot_1, reg_slot_2)
                 self.pc += 3
+
+            ###### PUSH & POP ######
+            elif instruction == 0b01000101:
+                # PUSH
+                # Determine which registrar it's being pushed to
+                reg_slot = self.ram[self.pc + 1]
+                val = self.reg[reg_slot]
+                # Decrement the stack pointer
+                self.reg[self.sp] -= 1
+                self.ram[self.reg[self.sp]] = val
+                self.pc += 2
+
+            elif instruction == 0b01000110:
+                # POP
+                # determine which registrar it's being pushed to
+                reg_slot = self.ram[self.pc + 1]
+                value = self.reg[reg_slot]
+                # Update the value of the registrar
+                # at the reg_slot with the assigned value
+                self.reg[reg_slot] = value
+                # Increment the stack pointer
+                self.reg[self.sp] += 1
+                self.pc +=2
 
             else:
                 print("Command not recognized")
